@@ -202,20 +202,32 @@ void Communicator::get_markers(const rclcpp::Time& frame_time, unsigned int vico
             current_marker->occluded = _Output_GetMerkerGlobalTranslation.Occluded;
         }
 
-        pub_it = pub_map_marker.find(this_subject_name + "/markers");
-        if (pub_it != pub_map_marker.end())
+
+
+            // send position to publisher
+        boost::mutex::scoped_try_lock lock(mutex);
+
+        if (lock.owns_lock())
         {
-            MarkerPublisher & pub = pub_it->second;
-            if (pub.is_ready)
+            // get publisher
+            pub_it = pub_map_marker.find(this_subject_name + "/markers");
+            if (pub_it != pub_map_marker.end())
             {
+                MarkerPublisher & pub = pub_it->second;
+
+                if (pub.is_ready)
+                {
                     pub.publish(markers, num_subject_markers, frame_time, vicon_frame_num);
+                }
+            }
+            else
+            {
+                // create publisher if not already available
+                lock.unlock();
+                create_publisher(this_subject_name, "");
             }
         }
-        else
-        {
-            // create publisher if not already available
-            create_publisher(this_subject_name, "");
-        }
+
     }
 
 
