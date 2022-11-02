@@ -28,6 +28,8 @@ find_package(Boost REQUIRED COMPONENTS thread)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Position.msg"
+  "msg/MarkerPosition.msg"
+  "msg/MarkerPositions.msg" DEPENDENCIES std_msgs
 )
 
 ament_export_dependencies(rosidl_default_runtime)
