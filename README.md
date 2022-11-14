@@ -1,23 +1,23 @@
 # Vicon receiver for ROS2 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/andreacamisa/ros2-vicon-receiver)
 
-**ros2-vicon-receiver** is a ROS2 package, written in C++, that retrieves data from Vicon software and publishes it on ROS2 topics. The code is partly derived from a mixture of [Vicon-ROS2](https://github.com/aheuillet/Vicon-ROS2) and [Vicon bridge](https://github.com/ethz-asl/vicon_bridge).
+**ros2-vicon-receiver** is a ROS2 package, written in C++, that retrieves data from Vicon software and publishes it on ROS2 topics. The code is partly derived from a mixture of [Vicon-ROS2](https://github.com/aheuillet/Vicon-ROS2) and [Vicon bridge](https://github.com/ethz-asl/vicon_bridge) .
 
 This is NOT an official ROS2 package and is not supported. The package has been successfully tested with ROS2 Dashing Diademata, ROS2 Foxy and ROS2 Galactic on the operating systems Ubuntu 18.04 Bionic Beaver, Ubuntu 20.04 Focal Fossa and MacOS 10.13 High Sierra.
 
-## Requirements
+## Installation of ROS2
 
-### Installation of dependencies
+**If ROS2 is already installed, you can skip this section**
 
+## Ubuntu 18.04 Bionic Beaver
 If you are using Ubuntu 18.04 Bionic Beaver, you can install all the dependencies by simply `cd`'ing into the main project folder and then running
 ```
 $ ./install_ubuntu_bionic.sh
 ```
 
-Otherwise, proceed as follows. Make sure you have ROS2 installed (follow the instructions at the [ROS2 website](https://index.ros.org/doc/ros2/Installation/)).
-
-Then, install [Colcon](https://colcon.readthedocs.io/en/released/index.html) and [CMake](https://cmake.org/) :
+## Ubuntu 20.04 Foxy Focal
+If you are using Ubuntu 20.04 Foxy Focal, you can install all the dependencies by simply `cd`'ing into the main project folder and then running
 ```
-$ sudo apt install -y python3-colcon-common-extensions cmake
+$ ./install_ros2_foxy.sh
 ```
 
 ### Installation of Datastream SDK and other libraries
@@ -33,11 +33,10 @@ $ ./install_libs.sh
 
 ### Building the package
 
-:warning: Do not forget to source the ROS2 workspace: `source /opt/ros/dashing/setup.bash`
+:warning: Do not forget to source the ROS2 workspace: `source /opt/ros/dashing/setup.bash` or `source /opt/ros/foxy/setup.bash`
 
-Enter the project folder and build the executable
+Build the executable
 ```
-$ cd vicon_receiver
 $ colcon build --symlink-install
 ```
 
@@ -45,31 +44,50 @@ $ colcon build --symlink-install
 
 Open a new terminal and source the project workspace:
 ```
-$ source vicon_receiver/install/setup.bash
+$ source install/setup.bash
 ```
 
-To run the program, use the [launch file template](vicon_receiver/launch/client.launch.py) provided in the package. First, open the file and edit the parameters. Running `colcon build` is not needed because of the `--symlink-install` option previously used.
+To run the program, use the [launch file template](vicon_receiver/launch/client.launch.py) provided in the package. First, open the file and
+edit the parameters. The hostname of the motion capture computer in RoMeLa is `192.168.200.101` while it is connected to the Robocup network. *If this
+setup changes, you must change this setting.* Running `colcon build` is not needed because of the `--symlink-install` option previously used.
 
-Now you can the program with
+Now you can launch the program with
 ```
 $ ros2 launch vicon_receiver client.launch.py
 ```
+
+### Checking the topics
+In another terminal, source the ROS2 workspace with 
+```
+$ source install/setup.bash
+```
+
+If the Vicon motion capture software is running on the RoMeLa computer, then you can see the topics using:
+```
+$ ros2 topic list
+```
+
 
 Exit the program with CTRL+C.
 
 ### Information on ROS2 topics and messages
 
-The **ros2-vicon-receiver** package creates a topic for each segment in each subject with the pattern `namespace/subject_name/segment_name`. Information is published on the topics as soon as new data is available from the vicon client (typically at the vicon client frequency). The message type [Position](vicon_receiver/msg/Position.msg) is used.
+The **ros2-vicon-receiver** package creates a topic for each segment in each subject with the pattern `namespace/subject_name/segment_name`.
+Information is published on the topics as soon as new data is available from the vicon client (typically at the vicon client frequency). Two
+topics will be published for each subject: the centroidal position of the object based on the markers under `namespace/subject_name/subject_name` with message type
+[Position](vicon_receiver/msg/Position.msg) and a list of marker positions uner `namespace/subject_name/markers` with message type
+[MarkerPositions](vicon_receiver/msg/MarkerPositions.msg) and 
 
-Example: suppose your namespace is the default `vicon` and you have two subjects (`subject_1` and `subject_2`) with two segments each (`segment_1` and `segment_2`). Then **ros2-vicon-receiver** will publish [Position](vicon_receiver/msg/Position.msg) messages on the following topics:
+For the current implementation in RoMeLA, the default namespace `vicon` will be used. If you have two subjects (`subject_1` and `subject_2`,
+then, the topic published will be as follows:
 ```
-vicon/subject_1/segment_1
-vicon/subject_1/segment_2
-vicon/subject_2/segment_1
-vicon/subject_2/segment_2
+vicon/subject_1/subject_1
+vicon/subject_1/markers
+vicon/subject_2/subject_2
+vicon/subject_2/markers
 ```
 
-## Constributors
+## Contributors
 **ros2-vicon-receiver** is developed by
 [Andrea Camisa](https://www.unibo.it/sitoweb/a.camisa),
 [Andrea Testa](https://www.unibo.it/sitoweb/a.testa) and
